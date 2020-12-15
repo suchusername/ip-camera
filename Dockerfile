@@ -18,6 +18,7 @@ RUN apt-get update \
         libtiff-dev \
         libavformat-dev \
         libpq-dev \
+		libgtk2.0-dev \
     && rm -rf /var/lib/apt/lists/* 
 
 RUN pip install numpy
@@ -54,11 +55,8 @@ RUN ln -s \
   /usr/local/python/cv2/python-3.8/cv2.cpython-37m-x86_64-linux-gnu.so \
   /usr/local/lib/python3.8/site-packages/cv2.so
   
-# installing chromedriver
+# installing chromedriver support
 RUN apt-get update && apt-get install -y chromium
-RUN wget -P / https://chromedriver.storage.googleapis.com/83.0.4103.14/chromedriver_linux64.zip \
-  && unzip /chromedriver_linux64.zip -d / \
-  && rm /chromedriver_linux64.zip
   
 # installing Python dependencies
 COPY requirements.txt .
