@@ -1,6 +1,6 @@
 # ip-camera
 
-AXIS P5624-E Mk II Network Camera
+AXIS PTZ Camera
 
 Debian GNU/Linux 10
 
