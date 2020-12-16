@@ -55,9 +55,6 @@ RUN ln -s \
   /usr/local/python/cv2/python-3.8/cv2.cpython-37m-x86_64-linux-gnu.so \
   /usr/local/lib/python3.8/site-packages/cv2.so
   
-# installing chromedriver support
-RUN apt-get update && apt-get install -y chromium
-  
 # installing Python dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
