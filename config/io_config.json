@@ -1,0 +1,12 @@
+{
+    "user": {
+        "tilt_offset": 5,
+        "pan_offset": 5,
+        "zoom_offset": 50
+    },
+    "preset": {
+        "regexp": "^[A-Za-z0-9_]*$",
+        "len": 20,
+        "max": 10
+    }
+}
