@@ -269,7 +269,7 @@ class AXISCameraController:
         up : bool, True - move up, False - move down
         """
         if val is None:
-            val = self._io_config["user"]["tilt_offset"]
+            val = self._io_config["user"]["tilt_step"]
         if not up:
             val = -val
 
@@ -285,7 +285,7 @@ class AXISCameraController:
         right: bool, True - move right, False - left
         """
         if val is None:
-            val = self._io_config["user"]["pan_offset"]
+            val = self._io_config["user"]["pan_step"]
         if not right:
             val = -val
 
@@ -301,7 +301,7 @@ class AXISCameraController:
         closer: bool, True - zoom in, False - zoom out
         """
         if val is None:
-            val = self._io_config["user"]["zoom_offset"]
+            val = self._io_config["user"]["zoom_step"]
         if not closer:
             val = -val
 
