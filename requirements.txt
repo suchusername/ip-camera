@@ -10,3 +10,4 @@ PyYAML==5.3.1
 selenium==3.141.0
 Pillow==7.2.0
 black==20.8b1
+pytelegrambotapi==3.7.4
