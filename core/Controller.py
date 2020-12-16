@@ -179,6 +179,9 @@ class AXISCameraController:
         Args:
         name: str, name of a preset
         """
+        if name == "":
+            return self.set_default()
+        
         if not re.match(self._io_config["preset"]["regexp"], name):
             return False, "preset doesn't exist"
         if len(name) > self._io_config["preset"]["len"]:
