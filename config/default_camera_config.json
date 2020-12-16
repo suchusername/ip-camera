@@ -2,6 +2,7 @@
     "pan": 125,
     "tilt": -20,
     "zoom": 0,
+    "brightness": 3000,
     "autofocus": "on",
     "autoiris": "on"
 }

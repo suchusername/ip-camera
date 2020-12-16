@@ -1,8 +1,9 @@
 import os
-import requests
 import time
 import json
 import re
+
+from core.request import AXIS_request
 
 DEFAULT_CAMERA_CONFIG = "/ip-camera/config/default_camera_config.json"
 IO_CONFIG = "/ip-camera/config/io_config.json"
@@ -50,7 +51,9 @@ class AXISCameraController:
     limits     : dict, limits of the camera
     presents   : list, available presets
     
-    Note: every `set` or `get` method returns response data.
+    Note: every `set` or `get` method returns a tuple (ok, data):
+        ok  : bool, whether the operation was successful
+        data: data returned or error message
     """
 
     def __init__(self, ip, camera_n=1, camera_ir=0):
@@ -101,21 +104,7 @@ class AXISCameraController:
         """
         # Sending GET request
         params = merge_dicts(config, self.base_config)
-        resp = requests.get(self.url, params=params)
-
-        # Parsing response
-        resp_data = {}
-        if resp.text.startswith("Error"):
-            print(resp.text)
-        else:
-            for line in resp.text.splitlines():
-                (name, var) = line.split("=", 2)
-                try:
-                    resp_data[name.strip()] = float(var)
-                except ValueError:
-                    resp_data[name.strip()] = var
-
-        return resp_data
+        return AXIS_request(self.url, params)
 
     def get_configuration(self):
         """
@@ -126,23 +115,22 @@ class AXISCameraController:
         Returns:
         dict with confugurations
         """
-        query_config = {"query": "position"}
-        resp_data = self.configure(query_config)
-        return resp_data
+        config = {"query": "position"}
+        return self.configure(config)
 
-    def set_default(self, config=DEFAULT_CAMERA_CONFIG):
+    def set_default(self):
         """
         Set default settings.
         
         Args:
         config, dict or path json-file with default settings
         """
+        config = DEFAULT_CAMERA_CONFIG
         if isinstance(config, str):
             with open(config, "r") as fd:
                 config = json.load(fd)
 
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
 
     def save_preset(self, name, overwrite=False):
         """
@@ -154,23 +142,35 @@ class AXISCameraController:
         """
         # Checking name
         if not re.match(self._io_config["preset"]["regexp"], name):
-            return "preset name must contain only letters, numbers or underscores"
+            return (
+                False,
+                "preset name must contain only letters, numbers or underscores",
+            )
         preset_len = self._io_config["preset"]["len"]
         if len(name) > preset_len:
-            return f"preset name must not exceed {preset_len} characters"
+            return False, f"preset name must not exceed {preset_len} characters"
 
         # Counting existing presents
         preset_max = self._io_config["preset"]["max"]
         if len(self.presets) >= preset_max:
-            return f"maximum number of presets ({preset_max}) reached"
+            return False, f"maximum number of presets ({preset_max}) reached"
 
         save_path = os.path.join(PRESETS_PATH, name + ".json")
         if os.path.exists(save_path) and (not overwrite):
-            return "preset already exists"
+            return False, "preset already exists"
 
-        config = self.get_configuration()
-        with open(save_path, "w") as fd:
-            json.dump(config, fd, indent=4)
+        ok, data = self.get_configuration()
+        if not ok:
+            return False, data
+
+        try:
+            with open(save_path, "w") as fd:
+                json.dump(data, fd, indent=4)
+        except:
+            ok = False
+            data = "failed to save preset"
+
+        return ok, data
 
     def load_preset(self, name):
         """
@@ -180,19 +180,21 @@ class AXISCameraController:
         name: str, name of a preset
         """
         if not re.match(self._io_config["preset"]["regexp"], name):
-            return "preset doesn't exist"
+            return False, "preset doesn't exist"
         if len(name) > self._io_config["preset"]["len"]:
-            return "preset doesn't exist"
+            return False, "preset doesn't exist"
 
         preset_path = os.path.join(PRESETS_PATH, name + ".json")
         if not os.path.exists(preset_path):
-            return "preset doesn't exist"
+            return False, "preset doesn't exist"
 
-        with open(preset_path, "r") as fd:
-            config = json.load(fd)
+        try:
+            with open(preset_path, "r") as fd:
+                config = json.load(fd)
+        except:
+            return False, "failed to load preset"
 
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
 
     def delete_preset(self, name):
         """
@@ -202,15 +204,20 @@ class AXISCameraController:
         name: str, name of a preset
         """
         if not re.match(self._io_config["preset"]["regexp"], name):
-            return "preset doesn't exist"
+            return False, "preset doesn't exist"
         if len(name) > self._io_config["preset"]["len"]:
-            return "preset doesn't exist"
+            return False, "preset doesn't exist"
 
         preset_path = os.path.join(PRESETS_PATH, name + ".json")
         if not os.path.exists(preset_path):
-            return "preset doesn't exist"
+            return False, "preset doesn't exist"
 
-        os.remove(preset_path)
+        try:
+            os.remove(preset_path)
+        except:
+            return False, "failed to delete preset"
+
+        return True, None
 
     def set(self, key, value):
         """
@@ -221,8 +228,7 @@ class AXISCameraController:
         value: value
         """
         config = {key: value}
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
 
     def autofocus(self, val):
         """
@@ -235,8 +241,8 @@ class AXISCameraController:
             config = {"autofocus": bool_to_onoff(val)}
         else:
             config = {"autofocus": val}
-        resp_data = self.configure(config)
-        return resp_data
+
+        return self.configure(config)
 
     def autoiris(self, val):
         """
@@ -249,8 +255,7 @@ class AXISCameraController:
             config = {"autoiris": bool_to_onoff(val)}
         else:
             config = {"autoiris": val}
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
 
     def tilt(self, val=None, up=True):
         """
@@ -266,8 +271,7 @@ class AXISCameraController:
             val = -val
 
         config = {"rtilt": val}
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
 
     def pan(self, val=None, right=True):
         """
@@ -283,8 +287,7 @@ class AXISCameraController:
             val = -val
 
         config = {"rpan": val}
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
 
     def zoom(self, val=None, closer=True):
         """
@@ -300,5 +303,4 @@ class AXISCameraController:
             val = -val
 
         config = {"rzoom": val}
-        resp_data = self.configure(config)
-        return resp_data
+        return self.configure(config)
