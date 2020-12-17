@@ -1,0 +1,27 @@
+[
+	{
+		"ip": "166.145.68.221",
+		"location": "USA",
+		"description": "Camera is located at the intersection of Walney Rd. and Poplar Tree Rd. in Chantilly, Virginia."
+	}, 
+	{
+		"ip": "78.204.92.39:8000",
+		"location": "France",
+		"description": "Camera is located at some field in Caen, France. Very low quality and low framerate."
+	},
+	{
+		"ip": "49.229.157.4",
+		"location": "Thailand",
+		"description": "Camera is located in some garage in Bangkok, Thailand. Very low quality and low framerate."
+	},
+	{
+		"ip": "191.186.149.4:8080",
+		"location": "Brazil",
+		"description": "Camera is located at the intersection in Sao Paolo, Brazil. It is very popular and is often controlled by other users."
+	},
+	{
+		"ip": "81.62.192.74:8888",
+		"location": "Switzerland",
+		"description": "Camera is located near some road in Lausanne, Switzerland. Low quality and low framerate."
+	}
+]
