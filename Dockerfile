@@ -18,7 +18,7 @@ RUN apt-get update \
         libtiff-dev \
         libavformat-dev \
         libpq-dev \
-		libgtk2.0-dev \
+        libgtk2.0-dev \
     && rm -rf /var/lib/apt/lists/* 
 
 RUN pip install numpy
@@ -59,10 +59,3 @@ RUN ln -s \
 # installing Python dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-
-  
-  
-  
-  
-  
-  

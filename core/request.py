@@ -41,9 +41,9 @@ def AXIS_request(url, params={}):
         for line in resp.text.splitlines():
 
             (name, var) = line.split("=", 2)
-            if isinstance(var, (int, float)):
+            try:
                 data[name.strip()] = float(var)
-            else:
+            except:
                 data[name.strip()] = var
 
     except:

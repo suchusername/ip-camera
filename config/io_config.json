@@ -8,5 +8,10 @@
         "regexp": "^[A-Za-z0-9_]*$",
         "len": 20,
         "max": 10
+    },
+    "connection": {
+        "stream_prefix": "http://",
+        "stream_suffix": "/mjpg/video.mjpg",
+        "url_prefix": ""
     }
 }
