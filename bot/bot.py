@@ -9,6 +9,7 @@ from db_tools import create_connection, create, new_users, update_by_id, select_
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.Controller import AXISCameraController
+from core.utils import check_ip
 
 
 ########### Data base ###########
@@ -47,7 +48,7 @@ keyboard1.row('zoom in', 'up', 'zoom out')
 keyboard1.row('left', 'down', 'right')
 keyboard1.row('stop', 'show')
 
-keyboard2 = telebot.types.ReplyKeyboardMarkup()
+keyboard2 = telebot.types.ReplyKeyboardMarkup(True)
 keyboard2.row('stop')
 
 markup = telebot.types.ReplyKeyboardRemove(selective=False)
@@ -90,7 +91,10 @@ def send_photo(message):
             update_by_id(user_id, 'isRunning', 0)
             return 
 
+        
         camera_ip = text
+        if not check_ip(camera_ip):
+            raise ValueError("Invalid address")
         
         photo = photo_by_url(ip2url(camera_ip))   
         update_by_id(user_id, 'camera_ip', camera_ip)
@@ -98,22 +102,22 @@ def send_photo(message):
         controller = AXISCameraController(camera_ip)
         isok, conf = controller.get_configuration()
         
-        if isok:
-            pan, tilt, zoom = conf['pan'], conf['tilt'], conf['zoom']
-            update_by_id(user_id, 'pan', pan)
-            update_by_id(user_id, 'tilt', tilt)
-            update_by_id(user_id, 'zoom', zoom)
-        else:
-            raise ValueError(ok)
+        if not isok:
+            raise ValueError(conf)
+            
+        pan, tilt, zoom = conf['pan'], conf['tilt'], conf['zoom']
+        update_by_id(user_id, 'pan', pan)
+        update_by_id(user_id, 'tilt', tilt)
+        update_by_id(user_id, 'zoom', zoom)
             
         bot.send_photo(user_id, photo, reply_markup=keyboard1)
-        msg = bot.send_message(user_id, f'pan={pan},\n tilt={tilt},\n zoom={zoom}')
+        msg = bot.send_message(user_id, f'pan={pan},\ntilt={tilt},\nzoom={zoom}')
         update_by_id(user_id, 'msg_id', msg.id)
         bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
 
     except Exception as e:
         print(e)
-        msg = bot.reply_to(message, 'Oooops, invalid address. Try again', reply_markup=keyboard2)
+        msg = bot.reply_to(message, f'{e}\nTry again', reply_markup=keyboard2)
         bot.register_next_step_handler(msg, send_photo)
 
         
@@ -137,8 +141,8 @@ def move_camera(message, controller):
                 conf['zoom'] = zoom
                 controller.configure(conf)
             else:
-                raise ValueError(ok)
-
+                raise ValueError(conf)
+            
             photo = photo_by_url(ip2url(str(select_by_id(user_id, 'camera_ip'))))
             bot.send_photo(user_id, photo, reply_markup=keyboard1)
             
@@ -147,23 +151,23 @@ def move_camera(message, controller):
             return
             
         elif text == 'zoom in':
-            print(text)
-            update_by_id(user_id, 'zoom', min(float(select_by_id(user_id, 'zoom')) + d_zoom, controller.limits[1]['MaxZoom']))
+            print(text, user_id)
+            update_by_id(user_id, 'zoom', float(select_by_id(user_id, 'zoom')) + d_zoom)
         elif text == 'zoom out': 
-            print(text)
-            update_by_id(user_id, 'zoom', max(float(select_by_id(user_id, 'zoom')) - d_zoom, controller.limits[1]['MinZoom']))
+            print(text, user_id)
+            update_by_id(user_id, 'zoom', float(select_by_id(user_id, 'zoom')) - d_zoom)
         elif text == 'right':  
-            print(text)
-            update_by_id(user_id, 'pan', min(float(select_by_id(user_id, 'pan')) + d_pan, controller.limits[1]['MaxPan']))
+            print(text, user_id)
+            update_by_id(user_id, 'pan', float(select_by_id(user_id, 'pan')) + d_pan)
         elif text == 'left':  
-            print(text)
-            update_by_id(user_id, 'pan', max(float(select_by_id(user_id, 'pan')) - d_pan, controller.limits[1]['MinPan']))
+            print(text, user_id)
+            update_by_id(user_id, 'pan', float(select_by_id(user_id, 'pan')) - d_pan)
         elif text == 'up':  
-            print(text)
-            update_by_id(user_id, 'tilt', min(float(select_by_id(user_id, 'tilt')) + d_tilt, controller.limits[1]['MaxTilt']))
+            print(text, user_id)
+            update_by_id(user_id, 'tilt', float(select_by_id(user_id, 'tilt')) + d_tilt)
         elif text == 'down':  
-            print(text)
-            update_by_id(user_id, 'tilt', max(float(select_by_id(user_id, 'tilt')) - d_tilt, controller.limits[1]['MinTilt']))
+            print(text, user_id)
+            update_by_id(user_id, 'tilt', float(select_by_id(user_id, 'tilt')) - d_tilt)
         else: 
             bot.send_message(user_id, 'Invalid operation. Try again')
             msg = delete_message(user_id, bot)
@@ -177,13 +181,15 @@ def move_camera(message, controller):
         print(e)
         user_id = message.from_user.id
         bot.clear_step_handler_by_chat_id(user_id)
-        bot.reply_to(message, 'Oooops, something went wrong. Try again')
+        bot.reply_to(message, f'{e}\nTry again')
         
         msg = delete_message(user_id, bot)
         bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
         return 
 
     
-bot.polling(none_stop=True)
+# bot.polling(none_stop=True)
+bot.polling(none_stop=False)
+
 
 #################################

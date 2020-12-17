@@ -16,6 +16,6 @@ def photo_by_url(stream_url):
 def delete_message(user_id, bot):
     bot.delete_message(user_id,  str(select_by_id(user_id, 'msg_id')))
     pan, tilt, zoom = select_conf_by_id(user_id)
-    msg = bot.send_message(user_id, f'pan={pan},\n tilt={tilt},\n zoom={zoom}')
+    msg = bot.send_message(user_id, f'pan={pan},\ntilt={tilt},\nzoom={zoom}')
     update_by_id(user_id, 'msg_id', msg.id)
     return msg

@@ -6,7 +6,6 @@ def create_connection(db_file):
     conn = None
     try:
         conn = lite.connect(db_file)
-        print(lite.version)
     except Error as e:
         print(e)
     finally:
@@ -78,7 +77,6 @@ def insert_camera_by_ip(user_id, camera_ip, configuration, table='cameras', data
     con = lite.connect(data_users)
     cur = con.cursor()
     recs = cur.execute(f"select user_id, camera_ip from {table} WHERE user_id = ? AND camera_ip = ?", (user_id, camera_ip)).fetchall()
-    print(recs)
     
     if not (user_id, camera_ip) in recs:
         
@@ -98,7 +96,6 @@ def select_conf_by_id(user_id, table='users',  data_users='db/data_users.db'):
     recs = cur.execute(f'SELECT pan, tilt, zoom FROM {table} WHERE user_id={user_id}').fetchall()
     
     cur.close()
-    print(recs[0])
     return recs[0]
 
 
