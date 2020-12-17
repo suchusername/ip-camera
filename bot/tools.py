@@ -1,48 +1,21 @@
 import cv2
 import numpy as np
 from PIL import Image
-import sqlite3 as lite
-
+from db_tools import select_by_id, select_conf_by_id, update_by_id
 
 def photo_by_url(stream_url):
     print("Starting the download")
     cap = cv2.VideoCapture(stream_url)
     ret, frame = cap.read()
-    if ret:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    else:
-        print('Download failed')
-        return
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     print("Download completed")
+   
     return Image.fromarray(frame)
 
 
-def new_users(user_id, username, stream_url, isRunning, data_users = 'data_users.db'):  
-    con = lite.connect(data_users)
-    cur = con.cursor()
-    cur.execute("select user_id from users WHERE user_id = ?", (user_id,))
-
-    if not (user_id,) in cur.fetchall():
-        con = lite.connect(data_users)
-        cur = con.cursor()
-        cur.execute("INSERT INTO users VALUES(?, ?, ?, ?)",
-            (user_id, username, stream_url, isRunning))
-        con.commit()
-
-        
-def update_by_id(user_id, column_name, value, table='users', data_users='data_users.db'):
-    con = lite.connect(data_users)
-    cur = con.cursor()
-    cur.execute(f'UPDATE {table} SET {column_name}=? WHERE user_id=?', (value, user_id,))
-    con.commit()
-
-    
-def select_by_id(user_id, column_name, table='users', data_users='data_users.db'):
-    
-    con = lite.connect(data_users)
-    cur = con.cursor()
-    recs = cur.execute(f'SELECT {column_name} FROM {table} WHERE user_id={user_id}').fetchall()
-    
-    return recs[0][0]
-
-
+def delete_message(user_id, bot):
+    bot.delete_message(user_id,  str(select_by_id(user_id, 'msg_id')))
+    pan, tilt, zoom = select_conf_by_id(user_id)
+    msg = bot.send_message(user_id, f'pan={pan},\n tilt={tilt},\n zoom={zoom}')
+    update_by_id(user_id, 'msg_id', msg.id)
+    return msg
