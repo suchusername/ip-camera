@@ -12,6 +12,8 @@
     "connection": {
         "stream_prefix": "http://",
         "stream_suffix": "/mjpg/video.mjpg",
-        "url_prefix": ""
+        "url_prefix": "http://",
+        "url_suffix": "/axis-cgi/com/ptz.cgi",
+        "timeout": 1.0
     }
 }

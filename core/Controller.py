@@ -76,7 +76,12 @@ class AXISCameraController:
 
     @property
     def url(self):
-        return "http://" + self.ip + "/axis-cgi/com/ptz.cgi"
+        ret = (
+            self._io_config["connection"]["url_prefix"]
+            + self.ip
+            + self._io_config["connection"]["url_suffix"]
+        )
+        return ret
 
     @property
     def limits(self):
@@ -181,7 +186,7 @@ class AXISCameraController:
         """
         if name == "":
             return self.set_default()
-        
+
         if not re.match(self._io_config["preset"]["regexp"], name):
             return False, "preset doesn't exist"
         if len(name) > self._io_config["preset"]["len"]:
