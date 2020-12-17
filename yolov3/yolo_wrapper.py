@@ -55,7 +55,7 @@ class YOLOv3Wrapper:
         Run a detector on a raw image with all pre- and postprocessing.
         
         Args:
-        image            : np.array with an RGB image,
+        image: np.array with an RGB image,
         
         Returns:
         (bboxes, image), where
