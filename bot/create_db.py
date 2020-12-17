@@ -20,6 +20,8 @@ def create(db_file):
     try:
         conn = sqlite3.connect(db_file)
         c = conn.cursor()
+        
+        c.execute("""DROP TABLE IF EXISTS users""")
         c.execute("""CREATE TABLE "users" (
                             "user_id"    INTEGER PRIMARY KEY ,
                             "user_name"  TEXT,
@@ -33,17 +35,22 @@ def create(db_file):
     finally:
         if conn:
             conn.close()
+            
+            
+            
+            
 
 
 
 if __name__ == '__main__':
     db_path = r"data_users.db"
-    create_connection(db_path)
-    create(db_path)   
+#     create_connection(db_path)
+#     create(db_path)   
     
-#     conn = sqlite3.connect(db_path)
-#     c = conn.cursor()
-#     sql = "SELECT * FROM users "
-#     recs = c.execute(sql).fetchall()
-#     c.close()
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    sql = "SELECT * FROM users "
+    recs = c.execute(sql).fetchall()
+    print(recs)
+    c.close()
     

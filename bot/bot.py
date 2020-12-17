@@ -2,6 +2,8 @@ import telebot
 import os, sys
 
 from tools import photo_by_url, new_users, update_by_id, select_by_id
+from create_db import create_connection, create
+ 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -12,6 +14,9 @@ controller = AXISCameraController("166.145.68.221")
 
 ########### Data base ###########
 data_users = 'data_users.db'
+
+create_connection(data_users)
+create(data_users)   
 #################################
 
 

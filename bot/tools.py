@@ -7,12 +7,12 @@ import sqlite3 as lite
 def photo_by_url(stream_url):
     print("Starting the download")
     cap = cv2.VideoCapture(stream_url)
-    while True:
-
-        ret, frame = cap.read()
+    ret, frame = cap.read()
+    if ret:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        break
+    else:
+        print('Download failed')
+        return
     print("Download completed")
     return Image.fromarray(frame)
 
