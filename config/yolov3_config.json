@@ -1,7 +1,10 @@
 {
-    "input_size": 416,
+    "input_size": 320,
     "score_threshold": 0.5,
-    "nms_iou_threshold": 0.1,
+    "nms_iou_threshold": 0.01,
+    "confidence": "bboxes",
+    "bboxes_threshold": null,
+    "select_classes": null,
     "weights_url": "https://pjreddie.com/media/files/yolov3.weights",
     "weights_path": "/ip-camera/yolov3/yolov3.weights"
 }
