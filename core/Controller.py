@@ -4,33 +4,12 @@ import json
 import re
 
 from core.request import AXIS_request
+from core.utils import *
 
 DEFAULT_CAMERA_CONFIG = "/ip-camera/config/default_camera_config.json"
 IO_CONFIG = "/ip-camera/config/io_config.json"
 
 PRESETS_PATH = "/ip-camera/config/camera_presets"
-
-
-def merge_dicts(*dicts):
-    """
-    Merge two dictionaries. If keys overlap, later dictionaries overwrite their values.
-    
-    Args:
-    *dicts: sequence of python dicts
-    
-    Returns:
-    dict, merged dictionary
-    """
-    result = {}
-    for dictionary in dicts:
-        result.update(dictionary)
-    return result
-
-
-def bool_to_onoff(val):
-    if val:
-        return "on"
-    return "off"
 
 
 class AXISCameraController:
