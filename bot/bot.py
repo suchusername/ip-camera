@@ -5,7 +5,9 @@ import requests
 import sqlite3
 from functools import partial
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from core.tracking import get_frame
 from tools import photo_by_url, delete_message
 from db_tools import (
     create_connection,
@@ -16,14 +18,14 @@ from db_tools import (
     select_conf_by_id,
 )
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from core.Controller import AXISCameraController
 from core.utils import check_ip
 import cv2
 
 from yolov3.yolo_wrapper import YOLOv3Wrapper
 from yolov3.draw_bboxes import draw_bboxes
+
+from PIL import Image
 
 ########### Data base ###########
 
@@ -98,7 +100,7 @@ def start_handler(message):
     except sqlite3.IntegrityError as e:
         return
 
-    
+
 def get_address(message):
     try:
         user_id = message.from_user.id
@@ -190,15 +192,15 @@ def move_camera(message, controller):
                 msg, partial(move_camera, controller=controller)
             )
             return
-        elif test == "track":
+        elif text == "track":
             global model
-            
-            frame = photo_by_url(ip2url(str(select_by_id(user_id, "camera_ip"))))
+
+            frame = get_frame(ip2url(str(select_by_id(user_id, "camera_ip"))))
             bboxes = model.predict(frame)
-            frame2 = draw_bboxes(frame, bboxes)
-            
-            photo =  Image.fromarray(frame2)
-            bot.send_photo(user_id, photo, reply_markup)
+            frame = draw_bboxes(frame, bboxes)
+            photo = Image.fromarray(frame)
+            bot.send_photo(user_id, photo)
+
         elif text == "zoom in":
             print(text, user_id, user_name)
             update_by_id(user_id, "zoom", float(select_by_id(user_id, "zoom")) + d_zoom)

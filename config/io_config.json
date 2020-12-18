@@ -2,7 +2,7 @@
     "user": {
         "tilt_step": 3,
         "pan_step": 5,
-        "zoom_step": 100
+        "zoom_step": 400
     },
     "preset": {
         "regexp": "^[A-Za-z0-9_]*$",

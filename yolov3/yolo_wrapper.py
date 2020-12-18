@@ -80,10 +80,16 @@ class YOLOv3Wrapper:
             self.config["input_size"],
             self.config["score_threshold"],
         )
+        
+        if len(bboxes) == 0:
+            return np.zeros((0, 6))
 
         bboxes[:, [4, 5]] = bboxes[:, [5, 4]]
 
         bboxes = utils.nms(np.copy(bboxes), self.config["nms_iou_threshold"])
+        
+        if len(bboxes) == 0:
+            return np.zeros((0, 6))
 
         bboxes[:, [2, 3]] = bboxes[:, [2, 3]] - bboxes[:, [0, 1]]
 
