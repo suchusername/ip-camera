@@ -10,6 +10,8 @@ How to use the bot:
 
 ---
 
+![Photo from Google Maps](http://url/to/img.png)
+
 http://166.145.68.221/mjpg/video.mjpg
 
 AXIS PTZ Camera
