@@ -22,6 +22,9 @@ from core.Controller import AXISCameraController
 from core.utils import check_ip
 import cv2
 
+from yolov3.yolo_wrapper import YOLOv3Wrapper
+from yolov3.draw_bboxes import draw_bboxes
+
 ########### Data base ###########
 
 data_users = "/ip-camera/bot/db/data_users.db"
@@ -63,6 +66,10 @@ markup = telebot.types.ReplyKeyboardRemove(selective=False)
 #################################
 
 
+model = YOLOv3Wrapper()
+isTraking = False
+
+
 ############## Bot ##############
 
 bot = telebot.TeleBot("1434895473:AAGtbUwVgrrJD3QTz3l1Cgh0jh9Rt1Nqjr0")
@@ -90,7 +97,27 @@ def start_handler(message):
     except sqlite3.IntegrityError as e:
         return
 
-
+    
+@bot.message_handler(commands=['track'])
+def start_handler(message):
+    try:
+        user_id = message.from_user.id
+        new_users(user_id, message.from_user.first_name, 0, -1)
+        
+        global isTraking
+        global model
+        if not int(select_by_id(user_id, "isRunning")) and not isTraking:
+            update_by_id(user_id, "isRunning", 1)
+            bboxes = model.predict(frame)
+            frame2 = draw_bboxes(frame, bboxes)
+            
+            photo =  Image.fromarray(frame2)
+            bot.send_photo(user_id, photo, reply_markup)
+            
+    except sqlite3.IntegrityError as e:
+        return
+    
+    
 def get_address(message):
     try:
         user_id = message.from_user.id
