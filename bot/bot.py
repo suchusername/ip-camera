@@ -1,7 +1,9 @@
 import telebot
 import os, sys
 import json
+import requests
 from functools import partial
+
 
 from tools import photo_by_url, delete_message
 from db_tools import create_connection, create, new_users, update_by_id, select_by_id, select_conf_by_id
@@ -10,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.Controller import AXISCameraController
 from core.utils import check_ip
-
+import cv2
 
 ########### Data base ###########
 
@@ -75,13 +77,13 @@ def start_handler(message):
     user_id = message.from_user.id
     new_users(user_id, message.from_user.first_name, 0, -1)
     if not int(select_by_id(user_id, 'isRunning')):
+        update_by_id(user_id, 'isRunning', 1)
         text = message.text
         msg = bot.send_message(user_id, 'Enter the camera address')
-        bot.register_next_step_handler(msg, send_photo)
-        update_by_id(user_id, 'isRunning', 1)
+        bot.register_next_step_handler(msg, get_address)
 
         
-def send_photo(message):
+def get_address(message):
     try:  
         user_id = message.from_user.id
         text = message.text
@@ -96,7 +98,8 @@ def send_photo(message):
         if not check_ip(camera_ip):
             raise ValueError("Invalid address")
         
-        photo = photo_by_url(ip2url(camera_ip))   
+        photo = photo_by_url(ip2url(camera_ip))  
+        
         update_by_id(user_id, 'camera_ip', camera_ip)
         
         controller = AXISCameraController(camera_ip)
@@ -106,25 +109,35 @@ def send_photo(message):
             raise ValueError(conf)
             
         pan, tilt, zoom = conf['pan'], conf['tilt'], conf['zoom']
-        update_by_id(user_id, 'pan', pan)
-        update_by_id(user_id, 'tilt', tilt)
-        update_by_id(user_id, 'zoom', zoom)
+        update_by_id(user_id, 'pan', round(pan, 1))
+        update_by_id(user_id, 'tilt', round(tilt, 1))
+        update_by_id(user_id, 'zoom', round(zoom, 1))
             
         bot.send_photo(user_id, photo, reply_markup=keyboard1)
         msg = bot.send_message(user_id, f'pan={pan},\ntilt={tilt},\nzoom={zoom}')
         update_by_id(user_id, 'msg_id', msg.id)
         bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
-
+    
+    except cv2.error as e:
+        msg = bot.reply_to(message, 'Failed to upload photo\nTry again or send stop', reply_markup=keyboard2)
+        bot.register_next_step_handler(msg, get_address)   
+            
+    except requests.exceptions.ConnectionError as e:
+        msg = bot.reply_to(message, 'Connection reset by peer\nTry again or send stop', reply_markup=keyboard2)
+        bot.register_next_step_handler(msg, get_address)
+        
     except Exception as e:
         print(e)
-        msg = bot.reply_to(message, f'{e}\nTry again', reply_markup=keyboard2)
-        bot.register_next_step_handler(msg, send_photo)
+        msg = bot.reply_to(message, f'{e}\nTry again or send stop', reply_markup=keyboard2)
+        bot.register_next_step_handler(msg, get_address)
 
+        
+        ConnectionError
         
 def move_camera(message, controller):
     try:
         user_id = message.from_user.id
-        text = message.text
+        text = message.text.lower()
         if text == 'stop':
             bot.send_message(user_id, 'stopped', reply_markup=markup)
             update_by_id(user_id, 'isRunning', 0)
@@ -136,9 +149,9 @@ def move_camera(message, controller):
             isok, conf = controller.get_configuration()
             
             if isok:
-                conf['pan'] = pan
-                conf['tilt'] = tilt
-                conf['zoom'] = zoom
+                conf['pan'] = round(pan, 1)
+                conf['tilt'] = round(tilt, 1)
+                conf['zoom'] = round(zoom, 1)
                 controller.configure(conf)
             else:
                 raise ValueError(conf)
@@ -168,8 +181,29 @@ def move_camera(message, controller):
         elif text == 'down':  
             print(text, user_id)
             update_by_id(user_id, 'tilt', float(select_by_id(user_id, 'tilt')) - d_tilt)
+        elif text.split(' ')[0] == 'preset':
+            print(text, user_id)
+            text_lst = text.split(' ')
+            if len(text_lst) > 1:
+                isok, conf = controller.load_preset(text_lst[1])
+            else:
+                isok, conf = controller.load_preset('')      
+        
+            if not isok:
+                raise ValueError(conf)
+                
+            isok, conf = controller.get_configuration()
+
+            if not isok:
+                raise ValueError(conf)
+
+            pan, tilt, zoom = conf['pan'], conf['tilt'], conf['zoom']
+            update_by_id(user_id, 'pan', pan)
+            update_by_id(user_id, 'tilt', tilt)
+            update_by_id(user_id, 'zoom', zoom)
+            
         else: 
-            bot.send_message(user_id, 'Invalid operation. Try again')
+            bot.send_message(user_id, 'Invalid operation.\nTry again or send stop')
             msg = delete_message(user_id, bot)
             bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
             return
@@ -177,11 +211,20 @@ def move_camera(message, controller):
         msg = delete_message(user_id, bot)
         bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
 
+    except cv2.error as e:
+        msg = bot.reply_to(message, 'Failed to upload photo\nTry again or send stop')
+        bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
+        return
+    
+    except requests.exceptions.ConnectionError as e:
+        msg = bot.reply_to(message, 'Connection reset by peer\nTry again or send stop', reply_markup=keyboard2)
+        bot.register_next_step_handler(msg, get_address)
+        
     except Exception as e:      
         print(e)
         user_id = message.from_user.id
         bot.clear_step_handler_by_chat_id(user_id)
-        bot.reply_to(message, f'{e}\nTry again')
+        bot.reply_to(message, f'{e}\nTry again or send stop')
         
         msg = delete_message(user_id, bot)
         bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
