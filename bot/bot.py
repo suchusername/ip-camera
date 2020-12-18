@@ -2,6 +2,7 @@ import telebot
 import os, sys
 import json
 import requests
+import sqlite3
 from functools import partial
 
 
@@ -74,13 +75,16 @@ def start_handler(message):
 
 @bot.message_handler(commands=['start', 'go'])
 def start_handler(message):
-    user_id = message.from_user.id
-    new_users(user_id, message.from_user.first_name, 0, -1)
-    if not int(select_by_id(user_id, 'isRunning')):
-        update_by_id(user_id, 'isRunning', 1)
-        text = message.text
-        msg = bot.send_message(user_id, 'Enter the camera address')
-        bot.register_next_step_handler(msg, get_address)
+    try:
+        user_id = message.from_user.id
+        new_users(user_id, message.from_user.first_name, 0, -1)
+        if not int(select_by_id(user_id, 'isRunning')):
+            update_by_id(user_id, 'isRunning', 1)
+            text = message.text
+            msg = bot.send_message(user_id, 'Enter the camera address')
+            bot.register_next_step_handler(msg, get_address)
+    except sqlite3.IntegrityError as e:
+        return
 
         
 def get_address(message):
@@ -217,7 +221,7 @@ def move_camera(message, controller):
         return
     
     except requests.exceptions.ConnectionError as e:
-        msg = bot.reply_to(message, 'Connection reset by peer\nTry again or send stop', reply_markup=keyboard2)
+        msg = bot.reply_to(message, 'Connection reset by peer\nTry again or send stop')
         bot.register_next_step_handler(msg, get_address)
         
     except Exception as e:      
