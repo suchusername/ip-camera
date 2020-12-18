@@ -57,6 +57,7 @@ ip2url = lambda ip: stream_prefix + ip + stream_suffix
 keyboard1 = telebot.types.ReplyKeyboardMarkup(True)
 keyboard1.row("zoom in", "up", "zoom out")
 keyboard1.row("left", "down", "right")
+keyboard1.row("preset", "track")
 keyboard1.row("stop", "show")
 
 keyboard2 = telebot.types.ReplyKeyboardMarkup(True)
@@ -67,7 +68,7 @@ markup = telebot.types.ReplyKeyboardRemove(selective=False)
 
 
 model = YOLOv3Wrapper()
-isTraking = False
+isTracking = False
 
 
 ############## Bot ##############
@@ -97,26 +98,6 @@ def start_handler(message):
     except sqlite3.IntegrityError as e:
         return
 
-    
-@bot.message_handler(commands=['track'])
-def start_handler(message):
-    try:
-        user_id = message.from_user.id
-        new_users(user_id, message.from_user.first_name, 0, -1)
-        
-        global isTraking
-        global model
-        if not int(select_by_id(user_id, "isRunning")) and not isTraking:
-            update_by_id(user_id, "isRunning", 1)
-            bboxes = model.predict(frame)
-            frame2 = draw_bboxes(frame, bboxes)
-            
-            photo =  Image.fromarray(frame2)
-            bot.send_photo(user_id, photo, reply_markup)
-            
-    except sqlite3.IntegrityError as e:
-        return
-    
     
 def get_address(message):
     try:
@@ -209,7 +190,15 @@ def move_camera(message, controller):
                 msg, partial(move_camera, controller=controller)
             )
             return
-
+        elif test == "track":
+            global model
+            
+            frame = photo_by_url(ip2url(str(select_by_id(user_id, "camera_ip"))))
+            bboxes = model.predict(frame)
+            frame2 = draw_bboxes(frame, bboxes)
+            
+            photo =  Image.fromarray(frame2)
+            bot.send_photo(user_id, photo, reply_markup)
         elif text == "zoom in":
             print(text, user_id, user_name)
             update_by_id(user_id, "zoom", float(select_by_id(user_id, "zoom")) + d_zoom)
