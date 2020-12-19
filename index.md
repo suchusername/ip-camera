@@ -4,6 +4,32 @@ You can use the [editor on GitHub](https://github.com/suchusername/ip-camera/edi
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
+## Managing the bot
+
+to get information about how to use the bot, send /help.
+
+#### Example of the bot's operation
+
+1. To get started send `/star`.
+
+2. You will be prompted to enter an email. Enter it if you want to receive email notifications from the tracker. Otherwise click `skip` to continue without email. To stop work press `stop`.
+
+3. You will be prompted to enter the IP address of the camera to which you want to connect. To stop work press `stop`.
+
+4. The **camera control mode** is activated. A photo of the camera is displayed along with a message showing the current camera configurations. Commands for controlling the camera will appear at the bottom of the dialog:
+	- `up`, `down`, `left`, `right`  are used to change the orientation of the camera in space.
+	
+	- `zoom in`, `zoom out`  are used for zooming.
+	
+	- `show` sends a photo from the camera.
+	
+	- `track` enables **tracking mode**.
+	
+	- `stop` stops working with the camera.
+	
+#### Tracking mode
+
+In tracking mode the neural network detects objects in the photo from the camera and notifies the user if something appears in the photo (people, cars, etc.). In this case, the camera control is blocked. To see what is happening on the camera, click `show`. to return to the **camera control mode**, press `stop`.
 ## Installation
 
 Here's how to install the project on a local machine and on Google Cloud.
