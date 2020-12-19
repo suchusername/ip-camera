@@ -1,6 +1,8 @@
 from flask import Flask
 app = Flask(__name__)
 
+print("hello 1")
+
 import telebot
 import os, sys
 import json
@@ -46,6 +48,8 @@ create(data_users)
 
 ############ Config #############
 
+print("hello 2")
+
 IO_CONFIG = "/ip-camera/config/io_config.json"
 with open(IO_CONFIG, "r") as fd:
     io_config = json.load(fd)
@@ -62,6 +66,8 @@ ip2url = lambda ip: stream_prefix + ip + stream_suffix
 
 
 ########### Keyboards ###########
+
+print("hello 3")
 
 keyboard1 = telebot.types.ReplyKeyboardMarkup(True)
 keyboard1.row("zoom in", "up", "zoom out")
@@ -86,6 +92,8 @@ markup = telebot.types.ReplyKeyboardRemove(selective=False)
 
 ############## Model ############
 
+print("hello 4")
+
 model = YOLOv3Wrapper()
 isTracking = False
 vehicles = [1, 2, 3, 5, 6]
@@ -103,8 +111,11 @@ regex = "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$"
 
 ############## Bot ##############
 
+print("hello 5")
+
 bot = telebot.TeleBot("1434895473:AAGtbUwVgrrJD3QTz3l1Cgh0jh9Rt1Nqjr0")
 
+print("hello 6")
 
 @bot.message_handler(commands=["restart"])
 def start_handler(message):
@@ -497,7 +508,9 @@ def tracker_listener(message, controller, thread):
 
 
 # bot.polling(none_stop=True)
-bot.polling(none_stop=False)
+print("hello 7")
+
+#bot.polling(none_stop=False)
 
 if __name__ == '__main__':
     
