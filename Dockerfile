@@ -60,7 +60,5 @@ RUN ln -s \
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . /ip-camera
-
 ENTRYPOINT ["python"]
 CMD ["/ip-camera/bot/bot.py"]
