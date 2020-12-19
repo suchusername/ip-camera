@@ -28,7 +28,9 @@ def create(db_file):
                             "user_id"    INTEGER PRIMARY KEY ,
                             "user_name"  TEXT,
                             "isRunning"  INTEGER,
+                            "isTracking" INTEGER,
                             "msg_id"     INTEGER,
+                            "email"      TEXT,
                             "camera_ip"  TEXT,
                             "pan"        REAL,
                             "tilt"       REAL,
@@ -44,7 +46,7 @@ def create(db_file):
             conn.close()
 
 
-def new_users(user_id, username, isRunning, msg_id, data_users=DB_PATH):
+def new_users(user_id, username, isRunning, msg_id, data_users=DB_PATH, isTracking=False):
     con = lite.connect(data_users)
     cur = con.cursor()
     cur.execute("select user_id from users WHERE user_id = ?", (user_id,))
@@ -53,8 +55,8 @@ def new_users(user_id, username, isRunning, msg_id, data_users=DB_PATH):
         con = lite.connect(data_users)
         cur = con.cursor()
         cur.execute(
-            "INSERT INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-            (user_id, username, isRunning, msg_id, "NULL", "NULL", "NULL", "NULL"),
+            "INSERT INTO users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (user_id, username, isRunning, isTracking, msg_id, "NULL", "NULL", "NULL", "NULL", "NULL"),
         )
 
         con.commit()
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     #     create_connection(db_path)
     #     create(db_path)
 
-    conn = lite.connect(db_path)
+    conn = lite.connect("db/data_users.db")
     c = conn.cursor()
     sql = "SELECT * FROM users "
     recs = c.execute(sql).fetchall()

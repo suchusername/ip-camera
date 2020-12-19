@@ -24,3 +24,7 @@ def delete_message(user_id, bot):
     msg = bot.send_message(user_id, f"pan={pan},\ntilt={tilt},\nzoom={zoom}")
     update_by_id(user_id, "msg_id", msg.id)
     return msg
+
+
+def send_by_email(to_email, text, from_email = ""):
+    ...
