@@ -248,68 +248,72 @@ def get_address(message):
 
 def track_loop(user_id, controller):
     global model
+    counter = 0
     while select_by_id(user_id, "isTracking"):
-        try:
-            email = select_by_id(user_id, "email")
-            neet_email = not (email == "NULL")
+        if counter == 100:
+            counter = 0
+            try:
+                email = select_by_id(user_id, "email")
+                neet_email = not (email == "NULL")
 
-            pan, tilt, zoom = select_conf_by_id(user_id)
+                pan, tilt, zoom = select_conf_by_id(user_id)
 
-            isok, conf = controller.get_configuration()
+                isok, conf = controller.get_configuration()
 
-            if isok:
-                conf["pan"] = round(pan, 1)
-                conf["tilt"] = round(tilt, 1)
-                conf["zoom"] = round(zoom, 1)
-                controller.configure(conf)
-            else:
-                raise ValueError(conf)
+                if isok:
+                    conf["pan"] = round(pan, 1)
+                    conf["tilt"] = round(tilt, 1)
+                    conf["zoom"] = round(zoom, 1)
+                    controller.configure(conf)
+                else:
+                    raise ValueError(conf)
 
-            frame = get_frame(ip2url(str(select_by_id(user_id, "camera_ip"))))
-            bboxes = model.predict(frame)
-            if len(bboxes) > 0:
-                is_vehicle = False
-                is_persen = False
-                for i in np.unique(bboxes[:, 4]):
-                    i = int(i)
+                frame = get_frame(ip2url(str(select_by_id(user_id, "camera_ip"))))
+                bboxes = model.predict(frame)
+                if len(bboxes) > 0:
+                    is_vehicle = False
+                    is_persen = False
+                    for i in np.unique(bboxes[:, 4]):
+                        i = int(i)
 
-                    if i in vehicles:
-                        is_vehicle = True
-                    elif i in people:
-                        is_persen = True
+                        if i in vehicles:
+                            is_vehicle = True
+                        elif i in people:
+                            is_persen = True
 
-                if is_vehicle and is_persen:
-                    frame = draw_bboxes(frame, bboxes)
-                    photo = Image.fromarray(frame)
-                    text = "Vehicle and person are detected"
-                    msg = bot.send_photo(user_id, photo, text)
-                    if neet_email:
-                        send_by_email(email, text)
-                elif is_vehicle:
-                    frame = draw_bboxes(frame, bboxes)
-                    photo = Image.fromarray(frame)
-                    text = "Vehicle is detected"
-                    msg = bot.send_photo(user_id, photo, text)
-                    if neet_email:
-                        send_by_email(email, text)
-                elif is_persen:
-                    frame = draw_bboxes(frame, bboxes)
-                    photo = Image.fromarray(frame)
-                    text = "Person is detected"
-                    msg = bot.send_photo(user_id, photo, text)
-                    if neet_email:
-                        send_by_email(email, text)
+                    if is_vehicle and is_persen:
+                        frame = draw_bboxes(frame, bboxes)
+                        photo = Image.fromarray(frame)
+                        text = "Vehicle and person are detected"
+                        msg = bot.send_photo(user_id, photo, text)
+                        if neet_email:
+                            send_by_email(email, text)
+                    elif is_vehicle:
+                        frame = draw_bboxes(frame, bboxes)
+                        photo = Image.fromarray(frame)
+                        text = "Vehicle is detected"
+                        msg = bot.send_photo(user_id, photo, text)
+                        if neet_email:
+                            send_by_email(email, text)
+                    elif is_persen:
+                        frame = draw_bboxes(frame, bboxes)
+                        photo = Image.fromarray(frame)
+                        text = "Person is detected"
+                        msg = bot.send_photo(user_id, photo, text)
+                        if neet_email:
+                            send_by_email(email, text)
 
-        except cv2.error as e:
-            bot.send_message(user_id, "Failed to upload photo")
+            except cv2.error as e:
+                bot.send_message(user_id, "Failed to upload photo")
 
-        except requests.exceptions.ConnectionError as e:
-            bot.send_message(user_id, "Connection reset by peer")
+            except requests.exceptions.ConnectionError as e:
+                bot.send_message(user_id, "Connection reset by peer")
 
-        except Exception as e:
-            bot.send_message(user_id, e)
+            except Exception as e:
+                bot.send_message(user_id, e)
 
-        time.sleep(3)
+        time.sleep(0.03)
+        counter += 1
 
 
 def move_camera(message, controller):
