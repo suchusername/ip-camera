@@ -1,3 +1,6 @@
+from flask import Flask
+app = Flask(__name__)
+
 import telebot
 import os, sys
 import json
@@ -496,5 +499,6 @@ def tracker_listener(message, controller, thread):
 # bot.polling(none_stop=True)
 bot.polling(none_stop=False)
 
-
-#################################
+if __name__ == '__main__':
+    
+    app.run(host='0.0.0.0', port=8080)

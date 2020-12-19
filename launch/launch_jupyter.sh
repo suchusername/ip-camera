@@ -4,6 +4,7 @@ docker run\
  -v $(realpath ..):/ip-camera\
  --name jupyter_lab\
  -p 5001:5001\
+ --entrypoint=""\
  -t ip-camera\
  jupyter lab\
  --ip 0.0.0.0\
