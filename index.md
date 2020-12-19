@@ -1,8 +1,6 @@
-## Welcome to GitHub Pages
+# Incredible IP camera bot
 
-You can use the [editor on GitHub](https://github.com/suchusername/ip-camera/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Telegram handle: `@incredible_ip_camera_bot`
 
 ## Managing the bot
 
@@ -10,26 +8,35 @@ to get information about how to use the bot, send /help.
 
 #### Example of the bot's operation
 
-1. To get started send `/star`.
+1. Get started by sending `/start`.
 
-2. You will be prompted to enter an email. Enter it if you want to receive email notifications from the tracker. Otherwise click `skip` to continue without email. To stop work press `stop`.
+2. You will be prompted to enter an email. Enter it if you want to receive email notifications from the tracker, otherwise select `skip`.
 
-3. You will be prompted to enter the IP address of the camera to which you want to connect. To stop work press `stop`.
+3. You will be prompted to enter the IP address of the camera to which you want to connect. Press `stop` to stop work.
 
-4. The **camera control mode** is activated. A photo of the camera is displayed along with a message showing the current camera configurations. Commands for controlling the camera will appear at the bottom of the dialog:
-	- `up`, `down`, `left`, `right`  are used to change the orientation of the camera in space.
+Here are some examples:
+```markdown
+166.145.68.221
+191.186.149.4:8080
+```
+
+4. Now the **camera control mode** is activated. An image from the camera is displayed along with a message showing the current camera configurations. Commands for controlling the camera will appear at the bottom of the dialog:
+	- `up`, `down`, `left`, `right`  are used to change the orientation of the camera in space
 	
-	- `zoom in`, `zoom out`  are used for zooming.
+	- `zoom in`, `zoom out`  are used for zooming
 	
-	- `show` sends a photo from the camera.
+	- `show` sends a photo from the camera
 	
-	- `track` enables **tracking mode**.
+	- `track` enables **tracking mode**
 	
-	- `stop` stops working with the camera.
+	- `stop` stops working with the camera
 	
 #### Tracking mode
 
-In tracking mode the neural network detects objects in the photo from the camera and notifies the user if something appears in the photo (people, cars, etc.). In this case, the camera control is blocked. To see what is happening on the camera click `show`. To return to the **camera control mode** press `stop`.
+In tracking mode the neural network (YOLOv3) detects objects on the videostream and notifies the user if something appears in the photo (people, cars, etc). In this case, the camera control is blocked. To see what's happening on the camera click `show`. To return to the **camera control mode** press `stop`.
+
+---
+
 ## Installation
 
 Here's how to install the project on a local machine and on Google Cloud.
