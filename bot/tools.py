@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import smtplib
 from PIL import Image
 from db_tools import select_by_id, select_conf_by_id, update_by_id
 
@@ -26,5 +27,19 @@ def delete_message(user_id, bot):
     return msg
 
 
-def send_by_email(to_email, text, from_email = ""):
-    ...
+email = 'incredible.ip.camera.bot@gmail.com'
+password = 'incredible_ip_camera_bot0'
+
+def send_by_email(to_email, text):
+    try:
+        print(to_email, text)
+        smtpserver = smtplib.SMTP("smtp.gmail.com", 587)
+        smtpserver.ehlo()
+        smtpserver.starttls()
+        smtpserver.ehlo()
+        smtpserver.login(email, password)
+        smtpserver.sendmail(email, to_email, text)  
+        smtpserver.quit()
+    except Exception as e:
+        print(e)
+#         raise ValueError("Invalid email")
