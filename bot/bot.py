@@ -156,11 +156,12 @@ def get_email(message):
         elif text == "skip":
             ...
         elif re.match(regex, text):
+            send_by_email(text, "Test email from @incredible_ip_camera_bot")
             update_by_id(user_id, "email", text)
         else:
             raise ValueError("Invalid address")
 
-        msg = bot.send_message(user_id, "Enter the camera address")
+        msg = bot.send_message(user_id, "Enter the camera ip address")
         bot.register_next_step_handler(msg, get_address)
 
     except cv2.error as e:
@@ -249,7 +250,7 @@ def track_loop(user_id, controller):
     global model
     while select_by_id(user_id, "isTracking"):
         try:
-            email = select_by_id(user_id, "email") == "NULL"
+            email = select_by_id(user_id, "email")
             neet_email = not (email == "NULL")
 
             pan, tilt, zoom = select_conf_by_id(user_id)
