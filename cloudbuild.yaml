@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [
             'build',
-            '-t', 'gcr.io/ip-camera-299021/ip-camera-run',
+            '-t', 'gcr.io/ip-camera-299021/ip-camera-run:latest',
             '--cache-from', 'gcr.io/ip-camera-299021/ip-camera-run:latest',
             '.'
         ]
