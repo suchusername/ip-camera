@@ -29,7 +29,7 @@ to get information about how to use the bot, send /help.
 	
 #### Tracking mode
 
-In tracking mode the neural network detects objects in the photo from the camera and notifies the user if something appears in the photo (people, cars, etc.). In this case, the camera control is blocked. To see what is happening on the camera, click `show`. to return to the **camera control mode**, press `stop`.
+In tracking mode the neural network detects objects in the photo from the camera and notifies the user if something appears in the photo (people, cars, etc.). In this case, the camera control is blocked. To see what is happening on the camera click `show`. To return to the **camera control mode** press `stop`.
 ## Installation
 
 Here's how to install the project on a local machine and on Google Cloud.
