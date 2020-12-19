@@ -14,6 +14,7 @@ To get information about how to use the bot, send `/help`.
 
 3. You will be prompted to enter the IP address of the camera to which you want to connect. Press `stop` to stop work. Here are some examples:
 	- `166.145.68.221`
+	
  	- `191.186.149.4:8080`
 
 4. Now the **camera control mode** is activated. An image from the camera is displayed along with a message showing the current camera configurations. Commands for controlling the camera will appear at the bottom of the dialog:
