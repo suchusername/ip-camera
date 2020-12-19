@@ -1,9 +1,12 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: ['-c', 'docker pull gcr.io/ip-camera-299021/ip-camera:latest || exit 0']
+- name: 'gcr.io/cloud-builders/docker'
   args: [
             'build',
-            '-t', 'gcr.io/ip-camera-299021/ip-camera-run:latest',
-            '--cache-from', 'gcr.io/ip-camera-299021/ip-camera-run:latest',
+            '-t', 'gcr.io/ip-camera-299021/ip-camera:latest',
+            '--cache-from', 'gcr.io/ip-camera-299021/ip-camera:latest',
             '.'
         ]
-images: ['gcr.io/ip-camera-299021/ip-camera-run:latest']
+images: ['gcr.io/ip-camera-299021/ip-camera:latest']
