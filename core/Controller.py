@@ -164,7 +164,7 @@ class AXISCameraController:
         name: str, name of a preset
         """
         if name == "":
-            return self.set_default()
+            name = "default"
 
         if not re.match(self._io_config["preset"]["regexp"], name):
             return False, "preset doesn't exist"
@@ -181,7 +181,10 @@ class AXISCameraController:
         except:
             return False, "failed to load preset"
 
-        return self.configure(config)
+        ok, resp = self.configure(config)
+        if not ok:
+            return ok, resp
+        return ok, config
 
     def delete_preset(self, name):
         """

@@ -73,13 +73,12 @@ keyboard3 = telebot.types.ReplyKeyboardMarkup(True)
 keyboard3.row("stop", "show")
 
 
-keyboard4 = telebot.types.ReplyKeyboardMarkup(True,  one_time_keyboard=True)
+keyboard4 = telebot.types.ReplyKeyboardMarkup(True, one_time_keyboard=True)
 keyboard4.row("skip", "stop")
 
 markup = telebot.types.ReplyKeyboardRemove(selective=False)
 
 #################################
-
 
 
 ############## Model ############
@@ -92,13 +91,11 @@ people = [0]
 #################################
 
 
-
 ############# Email #############
 
-regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+regex = "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$"
 
 #################################
-
 
 
 ############## Bot ##############
@@ -113,14 +110,17 @@ def start_handler(message):
     update_by_id(user_id, "isRunning", 0)
     update_by_id(user_id, "msg_id", -1)
     bot.send_message(user_id, "Rebooted")
-    
-    
+
+
 @bot.message_handler(commands=["help"])
 def start_handler(message):
     try:
         user_id = message.from_user.id
         new_users(user_id, message.from_user.first_name, 0, -1)
-        bot.send_message(user_id, ' How to use the bot: \n\n1. Type /start \n2. Enter IP address of the camera (Ex: 166.145.68.221) \n3. If connection is successful, you will see a control panel. \n3. To go to a predefined preset, type preset <name>. Empty name corresponds to a default preset.\n')
+        bot.send_message(
+            user_id,
+            " How to use the bot: \n\n1. Type /start \n2. Enter IP address of the camera (Ex: 166.145.68.221) \n3. If connection is successful, you will see a control panel. \n3. To go to a predefined preset, type preset <name>. Empty name corresponds to a default preset.\n",
+        )
     except sqlite3.IntegrityError as e:
         return
 
@@ -133,18 +133,21 @@ def start_handler(message):
         if not int(select_by_id(user_id, "isRunning")):
             update_by_id(user_id, "isRunning", 1)
             update_by_id(user_id, "email", "NULL")
-            
-            msg = bot.send_message(user_id, "Enter your email address to receive notifications", reply_markup=keyboard4)
+
+            msg = bot.send_message(
+                user_id,
+                "Enter your email address to receive notifications",
+                reply_markup=keyboard4,
+            )
             bot.register_next_step_handler(msg, get_email)
     except sqlite3.IntegrityError as e:
         return
 
-    
+
 def get_email(message):
     try:
         user_id = message.from_user.id
         text = message.text.lower()
-        
 
         if text == "stop":
             bot.send_message(user_id, "stopped", reply_markup=markup)
@@ -156,7 +159,6 @@ def get_email(message):
             update_by_id(user_id, "email", text)
         else:
             raise ValueError("Invalid address")
-
 
         msg = bot.send_message(user_id, "Enter the camera address")
         bot.register_next_step_handler(msg, get_address)
@@ -180,13 +182,11 @@ def get_email(message):
     except Exception as e:
         print(e)
         msg = bot.reply_to(
-            message, f"{e}\nTry again or send stop", 
-            reply_markup=keyboard4
+            message, f"{e}\nTry again or send stop", reply_markup=keyboard4
         )
         bot.register_next_step_handler(msg, get_email)
 
-    
-    
+
 def get_address(message):
     try:
         user_id = message.from_user.id
@@ -245,14 +245,13 @@ def get_address(message):
         bot.register_next_step_handler(msg, get_address)
 
 
-
 def track_loop(user_id, controller):
     global model
     while select_by_id(user_id, "isTracking"):
         try:
             email = select_by_id(user_id, "email") == "NULL"
             neet_email = not (email == "NULL")
-            
+
             pan, tilt, zoom = select_conf_by_id(user_id)
 
             isok, conf = controller.get_configuration()
@@ -272,12 +271,12 @@ def track_loop(user_id, controller):
                 is_persen = False
                 for i in np.unique(bboxes[:, 4]):
                     i = int(i)
-                    
+
                     if i in vehicles:
                         is_vehicle = True
                     elif i in people:
                         is_persen = True
-                        
+
                 if is_vehicle and is_persen:
                     frame = draw_bboxes(frame, bboxes)
                     photo = Image.fromarray(frame)
@@ -299,23 +298,18 @@ def track_loop(user_id, controller):
                     msg = bot.send_photo(user_id, photo, text)
                     if neet_email:
                         send_by_email(email, text)
-                            
-                    
-
-               
-
 
         except cv2.error as e:
-            bot.send_message(user_id,"Failed to upload photo")
+            bot.send_message(user_id, "Failed to upload photo")
 
         except requests.exceptions.ConnectionError as e:
             bot.send_message(user_id, "Connection reset by peer")
 
         except Exception as e:
             bot.send_message(user_id, e)
-        
+
         time.sleep(3)
-        
+
 
 def move_camera(message, controller):
     try:
@@ -349,17 +343,21 @@ def move_camera(message, controller):
             )
             return
         elif text == "track":
-            
+
             print(text, user_id, user_name, select_by_id(user_id, "isTracking"))
-            if not select_by_id(user_id, "isTracking"):      
-                
-                msg = bot.send_message(user_id, "started tracking", reply_markup=keyboard3)
+            if not select_by_id(user_id, "isTracking"):
+
+                msg = bot.send_message(
+                    user_id, "started tracking", reply_markup=keyboard3
+                )
                 thread = Thread(target=track_loop, args=(user_id, controller))
                 update_by_id(user_id, "isTracking", 1)
-                bot.register_next_step_handler(msg, partial(tracker_listener, controller=controller, thread=thread))
+                bot.register_next_step_handler(
+                    msg, partial(tracker_listener, controller=controller, thread=thread)
+                )
                 thread.start()
-                return 
-                
+                return
+
         elif text == "zoom in":
             print(text, user_id, user_name)
             update_by_id(user_id, "zoom", float(select_by_id(user_id, "zoom")) + d_zoom)
@@ -378,18 +376,13 @@ def move_camera(message, controller):
         elif text == "down":
             print(text, user_id, user_name)
             update_by_id(user_id, "tilt", float(select_by_id(user_id, "tilt")) - d_tilt)
-        elif text.split(" ")[0] == "preset":
+        elif text.split()[0] == "preset":
             print(text, user_id, user_name)
-            text_lst = text.split(" ")
+            text_lst = text.split()
             if len(text_lst) > 1:
                 isok, conf = controller.load_preset(text_lst[1])
             else:
                 isok, conf = controller.load_preset("")
-
-            if not isok:
-                raise ValueError(conf)
-
-            isok, conf = controller.get_configuration()
 
             if not isok:
                 raise ValueError(conf)
@@ -426,8 +419,7 @@ def move_camera(message, controller):
         msg = delete_message(user_id, bot)
         bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
 
-        
-    
+
 def tracker_listener(message, controller, thread):
     print("tracker_listener")
     try:
@@ -436,14 +428,16 @@ def tracker_listener(message, controller, thread):
         text = message.text.lower()
         msg = None
         if text == "stop":
-            
+
             update_by_id(user_id, "isTracking", 0)
             thread.do_run = False
             thread.join()
             msg = bot.send_message(user_id, "Stopped tracking", reply_markup=keyboard1)
-            bot.register_next_step_handler(msg, partial(move_camera, controller=controller))
+            bot.register_next_step_handler(
+                msg, partial(move_camera, controller=controller)
+            )
             return
-        
+
         elif text == "show":
             pan, tilt, zoom = select_conf_by_id(user_id)
 
@@ -456,7 +450,7 @@ def tracker_listener(message, controller, thread):
                 controller.configure(conf)
             else:
                 raise ValueError(conf)
-                
+
             global model
             frame = get_frame(ip2url(str(select_by_id(user_id, "camera_ip"))))
             bboxes = model.predict(frame)
@@ -464,25 +458,35 @@ def tracker_listener(message, controller, thread):
             photo = Image.fromarray(frame)
             msg = bot.send_photo(user_id, photo)
         else:
-            msg = bot.send_message(user_id, "Tracking mode is enabled.\nPress stop to exit the mode")
-        bot.register_next_step_handler(msg, partial(tracker_listener, controller=controller, thread=thread))
+            msg = bot.send_message(
+                user_id, "Tracking mode is enabled.\nPress stop to exit the mode"
+            )
+        bot.register_next_step_handler(
+            msg, partial(tracker_listener, controller=controller, thread=thread)
+        )
 
     except cv2.error as e:
         msg = bot.reply_to(message, "Failed to upload photo\nTry again or send stop")
-        bot.register_next_step_handler(msg, partial(tracker_listener, controller=controller, thread=thread))
+        bot.register_next_step_handler(
+            msg, partial(tracker_listener, controller=controller, thread=thread)
+        )
         return
 
     except requests.exceptions.ConnectionError as e:
         msg = bot.reply_to(message, "Connection reset by peer\nTry again or send stop")
-        bot.register_next_step_handler(msg, partial(tracker_listener, controller=controller, thread=thread))
+        bot.register_next_step_handler(
+            msg, partial(tracker_listener, controller=controller, thread=thread)
+        )
 
     except Exception as e:
         print(e)
         user_id = message.from_user.id
         msg = bot.reply_to(message, f"{e}\nTry again or send stop")
-        bot.register_next_step_handler(msg, partial(tracker_listener, controller=controller, thread=thread))
+        bot.register_next_step_handler(
+            msg, partial(tracker_listener, controller=controller, thread=thread)
+        )
         return
-                    
+
 
 # bot.polling(none_stop=True)
 bot.polling(none_stop=False)
